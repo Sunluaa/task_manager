@@ -1,0 +1,33 @@
+# .dockerignore для всех сервисов
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.Python
+venv/
+env/
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Testing
+.pytest_cache
+.coverage
+
+# Node (для фронтенда)
+node_modules
+npm-debug.log
