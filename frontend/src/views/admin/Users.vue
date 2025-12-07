@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+  <div class="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-8">
     <div class="max-w-6xl mx-auto">
       <div class="flex justify-between items-center mb-8">
         <div class="flex items-center gap-4">
@@ -13,7 +13,7 @@
         </div>
         <button
           @click="showCreateModal = true"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+          class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-semibold transition"
         >
           Новый пользователь
         </button>
@@ -43,7 +43,7 @@
               <td class="px-6 py-4 text-gray-800">{{ user.email }}</td>
               <td class="px-6 py-4 text-gray-800">{{ user.full_name || '-' }}</td>
               <td class="px-6 py-4">
-                <span :class="['px-3 py-1 rounded-full text-sm font-semibold', user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800']">
+                <span :class="['px-3 py-1 rounded-full text-sm font-semibold', user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800']">
                   {{ user.role === 'admin' ? 'Администратор' : 'Пользователь' }}
                 </span>
               </td>
@@ -54,7 +54,7 @@
               </td>
               <td class="px-6 py-4 text-gray-600 text-sm">{{ formatDate(user.created_at) }}</td>
               <td class="px-6 py-4 text-right">
-                <button @click="editUser(user)" class="text-blue-600 hover:text-blue-800 font-semibold mr-4 transition">
+                <button @click="editUser(user)" class="text-orange-600 hover:text-orange-800 font-semibold mr-4 transition">
                   Редактировать
                 </button>
                 <button
@@ -85,7 +85,7 @@
               v-model="formData.email"
               :disabled="!!editingUser"
               type="email"
-              :class="['w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100', emailError ? 'border-red-500' : 'border-gray-300']"
+              :class="['w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100', emailError ? 'border-red-500' : 'border-gray-300']"
               placeholder="user@example.com"
             />
             <p v-if="emailError" class="text-red-500 text-sm mt-1">{{ emailError }}</p>
@@ -96,7 +96,7 @@
             <input
               v-model="formData.password"
               type="password"
-              :class="['w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500', passwordError ? 'border-red-500' : 'border-gray-300']"
+              :class="['w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500', passwordError ? 'border-red-500' : 'border-gray-300']"
               placeholder="Минимум 6 символов"
             />
             <p v-if="passwordError" class="text-red-500 text-sm mt-1">{{ passwordError }}</p>
@@ -107,7 +107,7 @@
             <input
               v-model="formData.full_name"
               type="text"
-              :class="['w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500', fullNameError ? 'border-red-500' : 'border-gray-300']"
+              :class="['w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500', fullNameError ? 'border-red-500' : 'border-gray-300']"
               placeholder="Иван Иванов"
             />
             <p v-if="fullNameError" class="text-red-500 text-sm mt-1">{{ fullNameError }}</p>
@@ -115,7 +115,7 @@
 
           <div>
             <label class="block text-gray-700 font-semibold mb-2">Роль</label>
-            <select v-model="formData.role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select v-model="formData.role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
               <option value="user">Пользователь</option>
               <option value="admin">Администратор</option>
             </select>
@@ -123,7 +123,7 @@
 
           <div>
             <label class="flex items-center">
-              <input v-model="formData.is_active" type="checkbox" class="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
+              <input v-model="formData.is_active" type="checkbox" class="w-4 h-4 text-orange-600 rounded focus:ring-2 focus:ring-orange-500" />
               <span class="ml-2 text-gray-700 font-semibold">Активен</span>
             </label>
           </div>
@@ -140,7 +140,7 @@
           <button
             @click="saveUser"
             :disabled="isSaving || !isFormValid"
-            :class="['px-4 py-2 rounded-lg font-semibold transition text-white', isFormValid ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed']"
+            :class="['px-4 py-2 rounded-lg font-semibold transition text-white', isFormValid ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-400 cursor-not-allowed']"
           >
             {{ isSaving ? 'Сохранение...' : editingUser ? 'Обновить' : 'Создать' }}
           </button>

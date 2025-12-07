@@ -56,13 +56,20 @@ async def create_user_admin(user: UserCreate, admin_user = Depends(require_admin
 
 @router.post("/login", response_model=TokenResponse)
 async def login(credentials: UserLogin, db: Session = Depends(get_db)):
-    user = AuthService.authenticate_user(db, credentials.email, credentials.password)
+    user, error_message = AuthService.authenticate_user(db, credentials.email, credentials.password)
     if not user:
-        logger.warning(f"Failed login attempt: {credentials.email}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
-        )
+        if error_message:
+            logger.warning(f"Login blocked - account inactive: {credentials.email}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=error_message
+            )
+        else:
+            logger.warning(f"Failed login attempt: {credentials.email}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = AuthService.create_access_token(
@@ -129,4 +136,22 @@ async def get_user_by_email(email: str, db: Session = Depends(get_db)):
     user = AuthService.get_user_by_email(db, email)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
+
+@router.post("/users/{user_id}/toggle-active", response_model=UserResponse)
+async def toggle_user_active(user_id: int, admin_user = Depends(require_admin), db: Session = Depends(get_db)):
+    """Toggle user active/inactive status (admin only)"""
+    user = AuthService.toggle_user_active(db, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    logger.info(f"User {user.email} active status toggled by admin to: {bool(user.is_active)}")
+    return user
+
+@router.put("/users/{user_id}/set-active", response_model=UserResponse)
+async def set_user_active(user_id: int, is_active: bool, admin_user = Depends(require_admin), db: Session = Depends(get_db)):
+    """Set user active status explicitly (admin only)"""
+    user = AuthService.set_user_active(db, user_id, is_active)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    logger.info(f"User {user.email} active status set to {is_active} by admin")
     return user

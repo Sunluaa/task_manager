@@ -1,13 +1,28 @@
 from sqlalchemy.orm import Session
 from app.models.notification import Notification
+from app.services.queue import NotificationQueue
 from datetime import datetime
 import logging
+import asyncio
 
 logger = logging.getLogger(__name__)
 
 class NotificationService:
     @staticmethod
+    async def enqueue_notification(user_id: int, title: str, message: str) -> str:
+        """Enqueue notification to Redis queue"""
+        payload = {
+            "user_id": user_id,
+            "title": title,
+            "message": message,
+        }
+        task_id = await NotificationQueue.enqueue_notification(payload)
+        logger.info(f"Notification enqueued for user {user_id}, task_id: {task_id}")
+        return task_id
+
+    @staticmethod
     def create_notification(db: Session, user_id: int, title: str, message: str) -> Notification:
+        """Create notification directly in database (for worker use)"""
         notification = Notification(
             user_id=user_id,
             title=title,

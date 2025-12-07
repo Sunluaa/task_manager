@@ -20,6 +20,12 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('auth_token', data.access_token)
       
       return data
+    } catch (error) {
+      // Clear authentication state on error
+      token.value = null
+      user.value = null
+      localStorage.removeItem('auth_token')
+      throw error
     } finally {
       loading.value = false
     }

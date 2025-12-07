@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
     <nav class="bg-white shadow">
       <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <router-link to="/" class="text-2xl font-bold text-blue-600">Задачи</router-link>
+        <router-link to="/" class="text-2xl font-bold text-orange-600">Задачи</router-link>
         <button @click="handleLogout" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition">
           Выход
         </button>
@@ -10,12 +10,12 @@
     </nav>
 
     <div class="max-w-4xl mx-auto px-4 py-8">
-      <router-link to="/" class="text-blue-600 hover:text-blue-700 mb-4 inline-block font-semibold">
+      <router-link to="/" class="text-orange-600 hover:text-orange-700 mb-4 inline-block font-semibold">
         ← К задачам
       </router-link>
 
       <div v-if="loading" class="flex justify-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
       </div>
 
       <div v-else-if="task" class="grid gap-8">
@@ -32,7 +32,7 @@
               <span class="text-sm text-gray-600 font-semibold">Статус</span>
               <select
                 v-model="form.status"
-                class="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                class="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
               >
                 <option value="new">Новая</option>
                 <option value="in_progress">В процессе</option>
@@ -44,7 +44,7 @@
               <span class="text-sm text-gray-600 font-semibold">Приоритет</span>
               <select
                 v-model="form.priority"
-                class="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                class="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
               >
                 <option value="low">Низкий</option>
                 <option value="medium">Средний</option>
@@ -70,7 +70,7 @@
             <textarea
               v-model="form.description"
               rows="4"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
             ></textarea>
           </div>
 
@@ -83,7 +83,7 @@
             <button
               @click="handleUpdate"
               :disabled="saving"
-              class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ saving ? 'Сохранение...' : 'Сохранить' }}
             </button>
@@ -103,10 +103,14 @@
           <!-- Admin section: Add worker -->
           <div v-if="authStore.user?.role === 'admin'" class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-2">Добавить исполнителя</label>
+            <div v-if="!canEditWorkers" class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-3">
+              <p class="text-yellow-800 text-sm">Можно добавлять/удалять исполнителей только для новых задач</p>
+            </div>
             <div class="flex gap-2">
               <select
                 v-model="selectedUserId"
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                :disabled="!canEditWorkers"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
                 <option value="">Выберите исполнителя...</option>
                 <option v-for="user in availableWorkers" :key="user.id" :value="user.id">
@@ -115,7 +119,7 @@
               </select>
               <button
                 @click="addWorker"
-                :disabled="!selectedUserId || assigning"
+                :disabled="!selectedUserId || assigning || !canEditWorkers"
                 class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ assigning ? 'Добавление...' : 'Добавить' }}
@@ -132,18 +136,18 @@
           </div>
           <div v-else class="space-y-2">
             <div
-              v-for="workerId in assignedWorkers"
-              :key="workerId"
+              v-for="worker in assignedWorkers"
+              :key="worker.id"
               class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
             >
-              <span class="font-medium text-gray-900">{{ getWorkerName(workerId) }}</span>
+              <span class="font-medium text-gray-900">{{ worker.full_name || worker.email }}</span>
               <div class="flex gap-2">
-                <span v-if="isWorkerCompleted(workerId)" class="text-green-600 font-semibold">Выполнено</span>
+                <span v-if="isWorkerCompleted(worker.id)" class="text-green-600 font-semibold">Выполнено</span>
                 <button
                   v-if="authStore.user?.role === 'admin'"
-                  @click="removeWorker(workerId)"
-                  :disabled="assigning"
-                  class="text-red-600 hover:text-red-800 font-semibold transition disabled:opacity-50"
+                  @click="removeWorker(worker.id)"
+                  :disabled="assigning || !canEditWorkers"
+                  class="text-red-600 hover:text-red-800 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Удалить
                 </button>
@@ -173,20 +177,20 @@
           <h2 class="text-2xl font-bold text-gray-900 mb-6">Статус исполнителей</h2>
           <div class="space-y-4 mb-6">
             <div
-              v-for="workerId in (task.worker_ids || [])"
-              :key="workerId"
+              v-for="worker in assignedWorkers"
+              :key="worker.id"
               class="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
             >
               <div>
-                <p class="font-semibold text-gray-900">{{ getWorkerName(workerId) }}</p>
-            <div v-if="isWorkerCompleted(workerId)" class="text-sm text-green-600 font-medium">Выполнено</div>
+                <p class="font-semibold text-gray-900">{{ worker.full_name || worker.email }}</p>
+            <div v-if="isWorkerCompleted(worker.id)" class="text-sm text-green-600 font-medium">Выполнено</div>
                 <p v-else class="text-sm text-yellow-600 font-medium">Ожидание</p>
               </div>
             </div>
           </div>
 
           <!-- Admin Action Buttons -->
-          <div v-if="allWorkersCompleted" class="flex gap-4">
+          <div v-if="allWorkersCompleted && task?.status !== 'completed'" class="flex gap-4">
             <button
               @click="approveTask"
               :disabled="approving"
@@ -202,35 +206,11 @@
               {{ reworking ? 'Отправка...' : 'Вернуть на доработку' }}
             </button>
           </div>
-          <div v-else class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-            <p class="text-blue-800 font-medium">Ожидание выполнения всеми исполнителями</p>
+          <div v-else-if="task?.status === 'completed'" class="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+            <p class="text-green-800 font-medium">Задача завершена</p>
           </div>
-        </div>
-
-        <!-- History Section -->
-        <div class="bg-white rounded-lg shadow-md p-8">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">История</h2>
-          <div v-if="commentsStore.loading" class="text-center py-4">
-            <p class="text-gray-500">Загрузка истории...</p>
-          </div>
-          <div v-else-if="commentsStore.history.length === 0" class="py-4">
-            <p class="text-gray-500">История отсутствует</p>
-          </div>
-          <div v-else class="space-y-4">
-            <div
-              v-for="item in commentsStore.history"
-              :key="item.id"
-              class="flex gap-4 pb-4 border-b last:border-b-0"
-            >
-              <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold flex-shrink-0">
-                {{ getHistoryIcon(item.event_type) }}
-              </div>
-              <div class="flex-1">
-                <p class="font-semibold text-gray-900">{{ formatHistoryEvent(item.event_type) }}</p>
-                <p class="text-sm text-gray-600 mt-1">{{ item.details }}</p>
-                <p class="text-xs text-gray-500 mt-2">{{ formatDate(item.created_at) }}</p>
-              </div>
-            </div>
+          <div v-else class="p-4 bg-orange-50 border border-orange-200 rounded-lg text-center">
+            <p class="text-orange-800 font-medium">Ожидание выполнения всеми исполнителями</p>
           </div>
         </div>
 
@@ -244,12 +224,12 @@
               v-model="newComment"
               placeholder="Добавить комментарий..."
               rows="3"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-3"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none mb-3"
             ></textarea>
             <button
               @click="addComment"
               :disabled="!newComment.trim() || commenting"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ commenting ? 'Отправка...' : 'Отправить' }}
             </button>
@@ -273,6 +253,33 @@
                 <p class="text-xs text-gray-500">{{ formatDate(comment.created_at) }}</p>
               </div>
               <p class="text-gray-700">{{ comment.text }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- History Section -->
+        <div class="bg-white rounded-lg shadow-md p-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">История</h2>
+          <div v-if="commentsStore.loading" class="text-center py-4">
+            <p class="text-gray-500">Загрузка истории...</p>
+          </div>
+          <div v-else-if="commentsStore.history.length === 0" class="py-4">
+            <p class="text-gray-500">История отсутствует</p>
+          </div>
+          <div v-else class="space-y-4">
+            <div
+              v-for="item in commentsStore.history"
+              :key="item.id"
+              class="flex gap-4 pb-4 border-b last:border-b-0"
+            >
+              <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-semibold flex-shrink-0">
+                {{ getHistoryIcon(item.event_type) }}
+              </div>
+              <div class="flex-1">
+                <p class="font-semibold text-gray-900">{{ formatHistoryEvent(item.event_type) }}</p>
+                <p class="text-sm text-gray-600 mt-1">{{ item.details }}</p>
+                <p class="text-xs text-gray-500 mt-2">{{ formatDate(item.created_at) }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -317,10 +324,16 @@ const error = ref(null)
 
 // Worker management
 const selectedUserId = ref('')
-const assignedWorkers = ref([])
+const assignedWorkers = ref([]) // Changed: now will store full worker objects {id, full_name, email, ...}
+const assignedWorkerIds = ref([]) // Keep track of just IDs for compatibility
 const availableWorkers = ref([])
 const loadingWorkers = ref(false)
 const assigning = ref(false)
+
+// Helper to check if task status allows editing workers
+const canEditWorkers = computed(() => {
+  return task.value?.status === 'new'
+})
 
 // Worker completion
 const completing = ref(false)
@@ -329,14 +342,14 @@ const approving = ref(false)
 const reworking = ref(false)
 
 const isAssignedToTask = computed(() => {
-  return assignedWorkers.value.includes(authStore.user?.id)
+  return assignedWorkerIds.value.includes(authStore.user?.id)
 })
 
 const allWorkersCompleted = computed(() => {
-  if (!task.value?.worker_ids || task.value.worker_ids.length === 0) {
+  if (!assignedWorkerIds.value || assignedWorkerIds.value.length === 0) {
     return false
   }
-  return task.value.worker_ids.every(workerId => isWorkerCompleted(workerId))
+  return assignedWorkerIds.value.every(workerId => isWorkerCompleted(workerId))
 })
 
 const loadTask = async () => {
@@ -371,8 +384,18 @@ const loadTask = async () => {
 const loadAssignedWorkers = async () => {
   loadingWorkers.value = true
   try {
+    // Get worker IDs
     const response = await api.get(`/tasks/${route.params.id}/workers`)
-    assignedWorkers.value = response.data || []
+    assignedWorkerIds.value = response.data || []
+    
+    // Get all users to fetch full info for assigned workers
+    const allUsersResponse = await api.get('/auth/users')
+    const allUsers = allUsersResponse.data || []
+    
+    // Build assigned workers array with full info
+    assignedWorkers.value = assignedWorkerIds.value
+      .map(workerId => allUsers.find(u => u.id === workerId))
+      .filter(w => w !== undefined)
     
     // Check if current user has completed this task
     if (task.value?.worker_completions) {
@@ -383,6 +406,7 @@ const loadAssignedWorkers = async () => {
   } catch (err) {
     console.error('Failed to load workers:', err)
     assignedWorkers.value = []
+    assignedWorkerIds.value = []
   } finally {
     loadingWorkers.value = false
   }
@@ -390,15 +414,17 @@ const loadAssignedWorkers = async () => {
 
 const loadAvailableWorkers = async () => {
   try {
-    // Load all users and filter for non-admin users only (regular users who can be assigned tasks)
+    // Load all users and filter for active non-admin users only
     const response = await api.get('/auth/users')
     const allUsers = response.data || []
     console.log('All users from API:', allUsers)
     
     const filtered = allUsers.filter(user => 
-      user.role !== 'admin' && !assignedWorkers.value.includes(user.id)
+      user.role !== 'admin' && 
+      user.is_active && 
+      !assignedWorkerIds.value.includes(user.id)
     )
-    console.log('Filtered workers:', filtered)
+    console.log('Filtered active workers:', filtered)
     
     availableWorkers.value = filtered
   } catch (err) {
@@ -409,6 +435,10 @@ const loadAvailableWorkers = async () => {
 
 const addWorker = async () => {
   if (!selectedUserId.value) return
+  if (!canEditWorkers.value) {
+    alert('Можно добавлять исполнителей только для новых задач')
+    return
+  }
   
   assigning.value = true
   try {
@@ -416,9 +446,10 @@ const addWorker = async () => {
       `/tasks/${route.params.id}/add-worker/${selectedUserId.value}`
     )
     
-    assignedWorkers.value.push(parseInt(selectedUserId.value))
+    assignedWorkerIds.value.push(parseInt(selectedUserId.value))
     selectedUserId.value = ''
     await loadAvailableWorkers()
+    await loadAssignedWorkers()
     
     // Reload comments and history to show updated data
     await commentsStore.fetchHistory(route.params.id)
@@ -430,6 +461,11 @@ const addWorker = async () => {
 }
 
 const removeWorker = async (workerId) => {
+  if (!canEditWorkers.value) {
+    alert('Можно удалять исполнителей только для новых задач')
+    return
+  }
+  
   if (!confirm('Удалить исполнителя из задачи?')) return
   
   assigning.value = true
@@ -438,7 +474,8 @@ const removeWorker = async (workerId) => {
       `/tasks/${route.params.id}/remove-worker/${workerId}`
     )
     
-    assignedWorkers.value = assignedWorkers.value.filter(id => id !== workerId)
+    assignedWorkerIds.value = assignedWorkerIds.value.filter(id => id !== workerId)
+    assignedWorkers.value = assignedWorkers.value.filter(w => w.id !== workerId)
     await loadAvailableWorkers()
     
     // Reload comments and history to show updated data
@@ -512,10 +549,19 @@ const reworkTask = async () => {
 }
 
 const getWorkerName = (workerId) => {
-  // Try to get worker name from available workers list or show ID
-  const worker = availableWorkers.value.find(w => w.id === workerId) ||
-                 assignedWorkers.value.find(w => w.id === workerId)
-  return worker?.full_name || worker?.email || `Исполнитель #${workerId}`
+  // Try to get worker name from assigned workers list
+  const worker = assignedWorkers.value.find(w => w.id === workerId)
+  if (worker) {
+    return worker.full_name || worker.email
+  }
+  
+  // Fallback to available workers or show ID
+  const availWorker = availableWorkers.value.find(w => w.id === workerId)
+  if (availWorker) {
+    return availWorker.full_name || availWorker.email
+  }
+  
+  return `Исполнитель #${workerId}`
 }
 
 const isWorkerCompleted = (workerId) => {
@@ -621,7 +667,7 @@ const getStatusBadgeClass = (status) => {
 const getPriorityBadgeClass = (priority) => {
   const baseClass = 'inline-block px-3 py-1 rounded-full text-xs font-semibold'
   const classes = {
-    'low': 'bg-blue-100 text-blue-800',
+    'low': 'bg-orange-100 text-orange-800',
     'medium': 'bg-purple-100 text-purple-800',
     'high': 'bg-orange-100 text-orange-800',
     'urgent': 'bg-red-100 text-red-800'

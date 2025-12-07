@@ -6,6 +6,7 @@ from app.schemas.task import (
     HistoryResponse, TaskStatus, WorkerCompletionResponse
 )
 from app.services.task_service import TaskService
+from app.services.user_validator import UserValidator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,16 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 @router.post("/", response_model=TaskResponse)
 async def create_task(task: TaskCreate, db: Session = Depends(get_db), user_id: int = 1):
+    # Validate that all workers are active
+    if task.worker_ids:
+        is_valid, error_message = UserValidator.validate_active_users(task.worker_ids)
+        if not is_valid:
+            logger.warning(f"Cannot create task: {error_message}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_message
+            )
+    
     db_task = TaskService.create_task(
         db,
         title=task.title,
@@ -75,6 +86,16 @@ async def update_task(
     db: Session = Depends(get_db),
     user_id: int = 1
 ):
+    # Validate that all new workers are active
+    if task_update.worker_ids:
+        is_valid, error_message = UserValidator.validate_active_users(task_update.worker_ids)
+        if not is_valid:
+            logger.warning(f"Cannot update task: {error_message}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_message
+            )
+    
     task = TaskService.update_task(
         db,
         task_id,

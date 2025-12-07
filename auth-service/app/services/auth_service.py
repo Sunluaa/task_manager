@@ -50,15 +50,16 @@ class AuthService:
             return None
 
     @staticmethod
-    def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
+    def authenticate_user(db: Session, email: str, password: str) -> tuple[Optional[User], Optional[str]]:
+        """Authenticate user. Returns (user, error_message) tuple."""
         user = db.query(User).filter(User.email == email).first()
         if not user:
-            return None
+            return None, None
         if not AuthService.verify_password(password, user.password_hash):
-            return None
+            return None, None
         if not user.is_active:
-            return None
-        return user
+            return None, "Account is inactive. Please contact administrator"
+        return user, None
 
     @staticmethod
     def register_user(db: Session, user_create: UserCreate) -> User:
@@ -117,3 +118,27 @@ class AuthService:
         db.delete(user)
         db.commit()
         return True
+
+    @staticmethod
+    def toggle_user_active(db: Session, user_id: int) -> Optional[User]:
+        """Toggle user active status (activate/deactivate)."""
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+        user.is_active = 1 - user.is_active  # Toggle between 0 and 1
+        db.commit()
+        db.refresh(user)
+        logger.info(f"User {user.email} active status changed to {bool(user.is_active)}")
+        return user
+
+    @staticmethod
+    def set_user_active(db: Session, user_id: int, is_active: bool) -> Optional[User]:
+        """Set user active status explicitly."""
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+        user.is_active = 1 if is_active else 0
+        db.commit()
+        db.refresh(user)
+        logger.info(f"User {user.email} active status set to {is_active}")
+        return user

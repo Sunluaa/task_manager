@@ -19,6 +19,21 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
   auth-service:
     build: ./auth-service
     environment:
@@ -48,13 +63,32 @@ services:
     build: ./notifications-service
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/notifications_db
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8003:8003"
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - app-network
+
+  notifications-worker:
+    build:
+      context: ./notifications-service
+      dockerfile: Dockerfile.worker
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/notifications_db
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: on-failure
 
   api-gateway:
     build: ./api-gateway
@@ -78,6 +112,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   app-network:

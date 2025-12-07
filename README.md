@@ -149,8 +149,29 @@ Vue 3 + Pinia + Vite + Axios
 
 ### Infrastructure
 ```
-Docker + Docker Compose + Kubernetes + Nginx
+Docker + Docker Compose + Kubernetes + Nginx + Redis
 ```
+
+- **Containerization:** Docker + Docker Compose
+- **Orchestration:** Kubernetes (K8s)
+- **Cache & Queue:** Redis 7
+- **Reverse Proxy:** Nginx/Ingress
+- **CI/CD Ready:** GitHub Actions compatible
+
+## 🚀 Новые возможности
+
+### 🔄 Async Notification Queue (Redis Integration)
+
+Асинхронная обработка уведомлений через Redis с поддержкой retries и Dead Letter Queue.
+
+- **Queue System:** Redis List-based с префиксами `queues:notifications` и `dlq:notifications`
+- **Worker Pattern:** Отдельный процесс для обработки очереди
+- **Retry Logic:** Автоматические повторные попытки (до 3 раз) перед перемещением в DLQ
+- **Dead Letter Queue:** Хранение неудачных уведомлений для анализа
+- **Async API:** Полная поддержка async/await через `aioredis` v2
+- **Scalable:** Горизонтальное масштабирование worker'ов
+
+📖 **Документация:** [REDIS_INTEGRATION.md](./REDIS_INTEGRATION.md)
 
 ## 🔌 API Endpoints
 
@@ -180,10 +201,14 @@ POST   /api/tasks/{id}/return-rework  → Вернуть на доработку
 
 ### Уведомления
 ```
-POST   /api/notifications/
-GET    /api/notifications/user/{id}
-PUT    /api/notifications/{id}/read
-DELETE /api/notifications/{id}
+POST   /api/notifications/                    → Enqueue (async via Redis)
+GET    /api/notifications/user/{id}           → Список
+GET    /api/notifications/{id}                → Получить
+PUT    /api/notifications/{id}/read           → Отметить прочитано
+PUT    /api/notifications/user/{id}/read-all  → Отметить все прочитано
+DELETE /api/notifications/{id}                → Удалить
+GET    /api/notifications/user/{id}/unread-count → Количество непрочитанных
+GET    /api/notifications/admin/queue-stats   → Статистика очереди (admin)
 ```
 
 ### Аналитика
@@ -206,6 +231,11 @@ docker-compose up --build
 - Frontend: http://localhost:3000
 - API Gateway: http://localhost:8000
 - Services: 8001-8004
+- Redis: localhost:6379
+
+**Новые сервисы:**
+- `redis` - Redis для queue
+- `notifications-worker` - Background worker для обработки очереди
 
 ### Kubernetes
 
@@ -213,16 +243,26 @@ docker-compose up --build
 # Создать namespace
 kubectl create namespace task-management
 
-# Применить конфиги
+# Применить Redis
+kubectl apply -f kubernetes/02-redis.yaml
+
+# Применить остальные конфиги
 kubectl apply -f kubernetes/
 
 # Проверить
-kubectl get pods
-kubectl get services
+kubectl get pods -n task-management
+kubectl get services -n task-management
 ```
+
+**Новые ресурсы в K8s:**
+- StatefulSet `redis` с PersistentVolumeClaim (5Gi)
+- Deployment `notifications-worker` (2 replicas)
+- Service `redis-service` (headless)
 
 **В production используйте:**
 - Traefik вместо FastAPI Gateway
+- Managed Redis (Azure Cache, AWS ElastiCache)
+- Persistent storage для Redis
 - Управляемые БД (RDS, Cloud SQL)
 - Secrets Manager (Vault, AWS Secrets)
 - ELK Stack для логирования

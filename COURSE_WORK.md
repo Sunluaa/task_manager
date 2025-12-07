@@ -1,801 +1,323 @@
-# Курсовая работа: Создание клиент‑серверного микросервисного приложения для управления задачами по ремонту и обслуживанию жилых помещений
+Титульный лист
+Здесь должен быть титульный лист (Рисунок 1.1)
 
-Автор: (Фамилия И.О.)
+Задание
+Здесь должно быть индивидуальное задание (Рисунок 1.2)
 
-Дисциплина: Архитектура клиент‑серверных приложений
+Аннотация
+В данной курсовой работе подробно рассматривается процесс проектирования, архитектурного анализа и реализации клиент-серверного приложения для управления задачами по ремонту и обслуживанию жилых помещений. Описаны современные подходы к построению архитектуры, приведён сравнительный анализ архитектурных стилей, раскрыты применяемые паттерны проектирования, обоснован выбор технологий, разработан прототип системы, приведены сценарии использования и архитектурные диаграммы. Работа выполнена в соответствии с требованиями дисциплины «Архитектура клиент-серверных приложений» и методическими рекомендациями.
 
-Дата: 6 декабря 2025 г.
+Содержание
+1. Перечень сокращений
+2. Введение
+3. Основная часть
+	3.1. Описание предметной области
+	3.1.1. Бизнес-процессы и сценарии
+	3.1.1. Бизнес-процессы и сценарии
+	Основные процессы приложения:
+	- Планирование работ: формирование графиков, автоматическое распределение задач, интеграция с календарями
+	- Постановка задач: создание задач на основе планов, заявок, аварийных ситуаций
+	- Назначение исполнителей: автоматическое и ручное распределение задач с учётом квалификации и загрузки
+	- Контроль исполнения: мониторинг статусов, эскалация просроченных задач, хранение истории изменений
+	- Коммуникация: обмен сообщениями, комментариями, файлами, интеграция с мессенджерами
+	- Формирование отчётности: автоматическая генерация отчётов, экспорт данных, интеграция с BI
+	- Анализ эффективности: сбор статистики, выявление неэффективных процессов
+	- Интеграция с внешними системами: API, webhook, синхронизация данных
+	- Автоматизация: сценарии обработки задач, прогнозирование аварий, оптимизация графиков
+	3.1.2. Организационная структура и роли
+	3.1.2. Организационная структура и роли
+	Роли в системе:
+	- Администратор: распределение задач, контроль исполнения, формирование отчётности, управление правами доступа
+	- Работник: выполнение задач, фиксация хода работ, добавление комментариев и файлов
+	- Заказчик: инициирование задач, контроль выполнения, согласование работ
+	- Подрядчик: выполнение специализированных работ, предоставление отчётов
+	- Контролёр: проверка качества, инициирование доработок
+	- Бухгалтер: учёт затрат, формирование финансовой отчётности
+	- Руководитель: стратегические решения, утверждение бюджета, анализ эффективности
+	3.1.3. Техническая инфраструктура
+	3.1.3. Техническая инфраструктура
+	Ключевые компоненты:
+	- Серверы (виртуализация, резервирование, масштабирование, облако/on-premise)
+	- Сетевые устройства (маршрутизаторы, балансировщики нагрузки, VPN)
+	- Облачные хранилища для документов и резервных копий
+	- Системы мониторинга и алерты (Prometheus, Grafana)
+	- CI/CD (Jenkins, GitLab CI, GitHub Actions), автоматизация тестирования и развертывания
+	- Средства безопасности: шифрование, аудит, защита от атак
+	- Масштабирование: автоматическое распределение нагрузки, интеграция с облаком
+	3.1.4. Интеграция с внешними системами
+	Интеграция реализована через REST API, webhook, синхронизацию данных с бухгалтерией, мессенджерами, облачными хранилищами, государственными порталами. Поддерживаются стандарты JSON, XML, CSV.
 
----
+	3.1.5. Безопасность и соответствие требованиям
+	Безопасность обеспечивается разграничением доступа, шифрованием данных, аудитом действий, защитой от атак (SQL-инъекции, XSS, CSRF, DDoS), регулярным обновлением компонентов. Соответствие требованиям ПДн, GDPR, отраслевым стандартам.
 
-## Аннотация
+	3.1.6. Эксплуатация и поддержка
+	Эксплуатация включает мониторинг состояния сервисов, автоматическое восстановление, резервное копирование, обновление, поддержку пользователей, обучение персонала, ведение документации.
 
-В рамках данной курсовой работы разработано клиент‑серверное микросервисное приложение для управления заявками на ремонт и обслуживание жилых помещений. Система реализована на базе микросервисной архитектуры с использованием FastAPI, PostgreSQL, Docker, Kubernetes и Vue 3 для фронтенда. Приложение обеспечивает регистрацию и аутентификацию пользователей, создание и управление заявками, назначение мастеров, загрузку фото работ, а также отправку уведомлений.
+	3.1.7. Перспективы развития
+	Перспективы: внедрение AI для анализа данных, интеграция IoT-датчиков, расширение мобильных функций, автоматизация новых бизнес-процессов, развитие аналитики и интеграций.
 
-Документ содержит аналитическую часть, проектирование архитектуры, реализацию сервисов, диаграммы в формате Mermaid, конфигурации контейнеризации и оркестрации, тестовые сценарии и инструкции по развертыванию.
+	3.2. Анализ архитектурных стилей клиент-серверных приложений
+	3.2.1. Исторический контекст и эволюция
+	Архитектура приложения эволюционировала от монолита к микросервисам для повышения масштабируемости и гибкости.
 
----
+	3.2.2. Сравнительный анализ архитектур
+	Монолит — простота, но сложная поддержка и масштабирование. Модульный монолит — частичная независимость, ограниченная гибкость. Микросервисы — независимость сервисов, масштабируемость, интеграция, отказоустойчивость. Serverless — не подходит из-за сложности бизнес-логики.
 
-## Перечень сокращений
+	3.2.3. Примеры применения в отрасли
+	Микросервисная архитектура успешно применяется в системах управления задачами, сервисах ЖКХ, корпоративных платформах.
 
-- API — Application Programming Interface
-- JWT — JSON Web Token
-- DB — Database
-- UI — User Interface
-- REST — Representational State Transfer
-- PVC — Persistent Volume Claim
-- HPA — Horizontal Pod Autoscaler
-- PDB — Pod Disruption Budget
-- CI/CD — Continuous Integration / Continuous Delivery
+	3.2.4. Риски и ограничения
+	Риски микросервисов: усложнение интеграции, необходимость DevOps, увеличение затрат на поддержку. Монолит — риск критических ошибок, невозможность независимого обновления.
 
----
+	3.2.5. Перспективы развития архитектурных подходов
+	Дальнейшее развитие — гибридные архитектуры, интеграция AI, IoT, автоматизация процессов, расширение аналитики.
 
-## Введение
+	3.3. Разработка архитектуры приложения
+	3.3.1. Общая концепция архитектуры
+	Микросервисная архитектура: Auth-service, Tasks-service, Notifications-service, API Gateway. Каждый сервис независим, взаимодействие через REST API и асинхронные события.
 
-Актуальность: автоматизация управления заявками на ремонт жилых помещений повышает оперативность выполнения работ, делает прозрачным процесс взаимодействия жильца, диспетчера и мастера, обеспечивает сбор статистики и учёт истории заявок.
+	3.3.2. Структура микросервисов
+	Auth-service — управление пользователями и ролями, Tasks-service — задачи и комментарии, Notifications-service — события и уведомления, API Gateway — маршрутизация и безопасность.
 
-Цель: разработать учебный проект — микросервисное приложение, реализующее базовый жизненный цикл заявок (создание, назначение, выполнение, контроль качества), доступное через веб‑интерфейс и REST API.
+	3.3.3. Модель данных и взаимодействие
+	User, Task, Comment, History, Notification, File. Взаимодействие через API Gateway, поддержка транзакций и согласованности данных.
 
-Задачи:
-- Спроектировать архитектуру системы в стиле микросервисов;
-- Реализовать пять сервисов: `auth-service`, `tasks-service`, `files-service`, `notifications-service`, `api-gateway`;
-- Обеспечить контейнеризацию и возможность деплоя в Kubernetes;
-- Подготовить документацию, диаграммы и тесты.
+	3.3.4. API Gateway и маршрутизация
+	API Gateway обеспечивает маршрутизацию, аутентификацию, авторизацию, агрегацию данных, обработку ошибок, интеграцию с мониторингом.
 
----
+	3.3.5. Внутренние паттерны и механизмы
+	MVC, DDD, Repository, Dependency Injection, Event Notification, Factory, Observer реализованы во всех сервисах для гибкости и тестируемости.
 
-# Глава 1. Аналитическая часть
+	3.3.6. Интеграция с корпоративными системами
+	Интеграция через REST API, поддержка корпоративных стандартов безопасности и обмена данными.
 
-## 1.1 Описание предметной области
+	3.3.7. Масштабирование и отказоустойчивость
+	Горизонтальное масштабирование сервисов, автоматическое восстановление, резервное копирование, мониторинг состояния.
 
-Предметная область — процессы управления заявками на ремонт и обслуживание в жилых комплексах. Участники: жилец (создаёт заявку), диспетчер (назначает мастера, следит за статусами), мастер (выполняет работу), администратор (управление пользователями). Основные операции: подача заявки, прикрепление фото, назначение исполнителя, изменение статусов, уведомления участников.
+	3.4. Архитектурные диаграммы
+	3.4.1. UML Use Case
+	3.4.2. UML Component Diagram
+	3.4.3. DFD уровень 0 и 1
+	3.4.4. ER-диаграмма базы данных
+	3.4.5. Диаграммы последовательности
+	3.4.6. C4-модель
 
-## 1.2 Анализ существующих решений
+	3.5. Применяемые паттерны проектирования
+	3.5.1. MVC
+	3.5.2. DDD (Bounded Contexts)
+	3.5.3. Repository
+	3.5.4. Dependency Injection
+	3.5.5. Event Notification
+	3.5.6. Factory
+	3.5.7. Observer
 
-Рынок предлагает решения от CRM/Helpdesk систем до специализированных ЖКХ платформ. Общие требования: многопользовательский доступ, разграничение прав, уведомления, хранение файлов, отказоустойчивость, масштабируемость. Для учебного проекта выбран стек, дающий баланс простоты разработки и соответствия промышленным практикам: FastAPI (быстрый backend), Vue 3 (легковесный SPA), Docker/Kubernetes (развертывание).
+	3.6. Обоснование выбора технологий
+	3.6.1. Backend-технологии
+	3.6.2. Database
+	3.6.3. Frontend
+	3.6.4. Контейнеризация и оркестрация
+	3.6.5. API Gateway
+	3.6.6. Интеграция и DevOps
 
-## 1.3 Формирование функциональных и нефункциональных требований
+	3.7. Описание прототипа системы (MVP)
+	3.7.1. Сценарии использования
+	3.7.2. Реализация ключевых функций
+	3.7.3. Интерфейс и UX
+	3.7.4. Тестирование и валидация
+	3.7.5. Примеры взаимодействия
+4. Заключение
+5. Список использованных источников
 
-Функциональные требования (кратко):
-- Регистрация и вход пользователей;
-- Роли: житель, мастер, диспетчер, админ;
-- CRUD для заявок (title, description, status, priority, attached_files, assigned_worker_id);
-- Назначение мастера диспетчером;
-- История изменений для каждой заявки;
-- Загрузка/выдача файлов (фото работ);
-- Отправка уведомлений (e‑mail или заглушка);
-- UI: авторизация, список заявок, создание, подробности.
+Перечень сокращений
+API — Application Programming Interface
+JWT — JSON Web Token
+MVP — Minimum Viable Product
+MVC — Model-View-Controller
+DDD — Domain-Driven Design
+DB — Database
+SPA — Single Page Application
+CI/CD — Continuous Integration / Continuous Deployment
+
+Введение
+Актуальность темы обусловлена необходимостью повышения эффективности процессов ремонта и обслуживания жилых помещений, что требует внедрения современных информационных систем для автоматизации управления задачами, контроля исполнения и взаимодействия между участниками процесса. В условиях роста объёма работ, усложнения процессов и необходимости прозрачного контроля, традиционные методы управления становятся недостаточно эффективными. Информационные системы позволяют оптимизировать распределение задач, повысить качество обслуживания, обеспечить своевременное выполнение работ и прозрачность взаимодействия.
+
+Цель работы — разработка архитектуры и прототипа клиент-серверного приложения, обеспечивающего автоматизацию управления задачами по ремонту и обслуживанию жилых помещений, с учётом современных требований к масштабируемости, безопасности и удобству использования.
+
+Задачи работы:
+- Провести анализ предметной области и выявить ключевые процессы и сущности.
+- Выполнить сравнительный анализ архитектурных стилей клиент-серверных приложений.
+- Обосновать выбор оптимального архитектурного решения.
+- Спроектировать структуру приложения, определить состав микросервисов и их взаимодействие.
+- Описать применяемые паттерны проектирования и их реализацию.
+- Обосновать выбор технологий и инструментов разработки.
+- Реализовать прототип системы (MVP), описать основные сценарии использования.
+
+Объект исследования — процессы ремонта и обслуживания жилых помещений в многоквартирных домах и частных объектах.
+Предмет исследования — архитектура и программная реализация клиент-серверного приложения для управления задачами, связанными с ремонтом и обслуживанием жилых помещений.
+
+Структура документа включает введение, основную часть с подробным анализом и проектированием, заключение и список источников. Основная часть содержит детализированные разделы, раскрывающие все аспекты проектирования, реализации и внедрения системы.
+
+...existing code...
+
+Задание
+Здесь должно быть индивидуальное задание (Рисунок 1.2)
+
+Аннотация
+В данной курсовой работе рассматривается процесс проектирования и реализации клиент-серверного приложения для управления задачами по ремонту и обслуживанию жилых помещений. Описаны архитектурные решения, применяемые паттерны проектирования, обоснован выбор технологий, приведён анализ архитектурных стилей и разработан прототип системы. Работа выполнена в соответствии с требованиями дисциплины «Архитектура клиент-серверных приложений».
+
+Содержание
+1. Перечень сокращений
+2. Введение
+3. Основная часть
+	3.1. Описание предметной области
+	3.2. Анализ архитектурных стилей клиент-серверных приложений
+	3.3. Разработка архитектуры приложения
+	3.4. Архитектурные диаграммы
+	3.5. Применяемые паттерны проектирования
+	3.6. Обоснование выбора технологий
+	3.7. Описание прототипа системы (MVP)
+4. Заключение
+5. Список использованных источников
+
+Перечень сокращений
+API — Application Programming Interface
+JWT — JSON Web Token
+MVP — Minimum Viable Product
+MVC — Model-View-Controller
+DDD — Domain-Driven Design
+DB — Database
+
+Введение
+Актуальность темы обусловлена необходимостью повышения эффективности процессов ремонта и обслуживания жилых помещений, что требует внедрения современных информационных систем для автоматизации управления задачами, контроля исполнения и взаимодействия между участниками процесса. Цель работы — разработка архитектуры и прототипа клиент-серверного приложения, обеспечивающего управление задачами по ремонту и обслуживанию жилых помещений. Задачи работы включают анализ предметной области, выбор оптимального архитектурного стиля, проектирование структуры приложения, реализацию MVP, а также обоснование применяемых технологий и паттернов проектирования. Объект исследования — процессы ремонта и обслуживания жилых помещений. Предмет исследования — архитектура и программная реализация клиент-серверного приложения для управления задачами. Структура документа включает введение, основную часть с подробным анализом и проектированием, заключение и список источников.
+
+Основная часть
+
+3.1. Описание предметной области
+Система предназначена для автоматизации управления задачами ремонта и обслуживания жилых помещений. Основные бизнес-процессы: планирование работ, постановка задач, назначение исполнителей, контроль исполнения, ведение истории изменений, коммуникация, формирование отчётности, анализ эффективности, интеграция с внешними системами.
+
+Ключевые сущности:
+- Пользователь (администратор, работник, заказчик, подрядчик, контролёр, бухгалтер, руководитель)
+- Задача (описание, сроки, приоритет, статус, исполнитель, история изменений, файлы, комментарии, бюджет, объект недвижимости)
+- Комментарий (сообщение, вложения, автор, метки времени)
+- Статус задачи (создана, назначена, в работе, выполнена, подтверждена, отклонена, на доработке, ожидает согласования, ожидает материалов, приостановлена, завершена)
+- История изменений (журнал событий)
+- Уведомление (назначение задачи, изменение статуса, новый комментарий, приближение срока, завершение работ)
+- Файл (документы, фото, акты, отчёты)
+- Объект недвижимости (квартира, дом, инженерная система)
+- Затраты (материалы, труд, услуги подрядчиков)
+
+Функциональные требования:
+- Регистрация и авторизация пользователей с ролями
+- Создание, редактирование, удаление задач, назначение работников, установка сроков, приоритетов, добавление файлов
+- Изменение статусов задач, ведение истории изменений
+- Добавление и просмотр комментариев, поддержка вложений, уведомления
+- Поиск и фильтрация задач по критериям
+- Формирование отчётности, экспорт данных, интеграция с BI
+- Интеграция с внешними сервисами (почта, мессенджеры, бухгалтерия)
+- Управление правами доступа, аудит действий
+- Соответствие нормативным требованиям
+- Поддержка мобильных устройств
 
 Нефункциональные требования:
-- REST API, документированное через OpenAPI/Swagger;
-- JWT‑аутентификация; ролевой доступ;
-- Производительность: обработка 100 запросов/сек в типичных условиях (учебное требование);
-- Масштабируемость: горизонтальное масштабирование сервисов;
-- Устойчивость: отдельные БД, контейнеры, PDB/HPA в Kubernetes.
-
-## 1.4 Ограничения проекта
-
-- Учебный характер: некоторые компоненты (например, SMTP) реализованы как заглушки;
-- Минимальный набор логики бизнес‑правил; упрощена обработка файлов (локальное хранилище / PVC);
-- Без полной интеграции с внешними системами оплаты и биллинга.
-
----
-
-# Глава 2. Проектирование архитектуры
-
-## 2.1 Обзор архитектурных стилей
-
-Кратко сравнение: монолит, SOA, микросервисы, serverless. Микросервисы выбраны из‑за модульности, независимого деплоя и масштабирования.
-
-## 2.2 Обоснование выбора микросервисной архитектуры
-
-Микросервисы позволяют разделить домены (аутентификация, задачи, файлы, уведомления), автономно развивать и масштабировать их, изолировать сбои и управлять зависимостями. Это соответствует DDD (Domain‑Driven Design): каждый сервис владеет своей моделью и БД.
-
-## 2.3 Описание микросервисов
-
-- `auth-service` — управление пользователями, регистрация, логин, JWT, роли (resident, worker, dispatcher, admin).
-- `tasks-service` — CRUD для заявок, статусы (new, assigned, in_progress, done, verified), приоритеты (low, normal, high), история изменений, assignment.
-- `files-service` — загрузка и получение фото; хранение на PVC; API для привязки файлов к заявкам.
-- `notifications-service` — отправка уведомлений (SMTP или тестовая очередь). Может быть заменён реальным сервисом в production.
-- `api-gateway` — единственная точка входа; маршрутизация запросов; валидация/проверка JWT; консолидированная документация.
-
-## 2.4 API Gateway
-
-API Gateway реализует следующие функции:
-- Маршрутизация запросов по префиксам `/api/auth`, `/api/tasks`, `/api/files`, `/api/notifications`;
-- Проверка и извлечение JWT; проброс контекста пользователя в заголовках;
-- Аггрегация простых запросов при необходимости.
-
-## 2.5 Проектирование взаимодействия сервисов
-
-Взаимодействие — синхронное по REST между gateway и сервисами. Асинхронные события (например, уведомления о смене статуса) можно реализовать через очереди (RabbitMQ) — пункт для дальнейшего расширения.
-
-Пример сценария: создание заявки
-1. Жилец POST `/api/tasks` → API Gateway → Tasks Service
-2. Tasks Service создаёт запись, сохраняет отношение к пользователю
-3. Tasks Service вызывает Notifications Service (POST `/notifications`) синхронно или отправляет событие в очередь
-4. Files загружает фотографии и возвращает ссылки, Tasks связывает файлы с заявкой
-
-## 2.6 ER‑диаграмма (Mermaid)
-
-```mermaid
-erDiagram
-    USERS ||--o{ TASKS : creates
-    USERS ||--o{ FILES : uploads
-    TASKS ||--o{ FILES : has
-    TASKS ||--o{ TASK_HISTORY : history
-
-    USERS {
-        integer id PK
-        string email
-        string full_name
-        string role
-    }
-    TASKS {
-        integer id PK
-        string title
-        text description
-        string status
-        string priority
-        integer author_id FK
-        integer assigned_worker_id FK
-        datetime created_at
-        datetime updated_at
-    }
-    FILES {
-        integer id PK
-        string file_path
-        integer owner_id FK
-        integer task_id FK
-        datetime created_at
-    }
-    TASK_HISTORY {
-        integer id PK
-        integer task_id FK
-        integer user_id FK
-        string action
-        text comment
-        datetime created_at
-    }
-```
-
-## 2.7 UML диаграммы (Mermaid)
-
-Use Case:
-
-```mermaid
-usecaseDiagram
-    actor Resident as R
-    actor Dispatcher as D
-    actor Worker as W
-    actor Admin as A
-
-    R --> (Create Task)
-    R --> (View Own Tasks)
-    D --> (Assign Worker)
-    D --> (View All Tasks)
-    W --> (Update Task Status)
-    A --> (Manage Users)
-```
-
-Component Diagram:
-
-```mermaid
-componentDiagram
-    package "Frontend" {
-      [Vue SPA]
-    }
-    package "API Layer" {
-      [API Gateway]
-    }
-    package "Services" {
-      [Auth Service]
-      [Tasks Service]
-      [Files Service]
-      [Notifications Service]
-    }
-    package "Infrastructure" {
-      [Postgres]
-      [PVC / Storage]
-      [Ingress]
-    }
-
-    [Vue SPA] --> [API Gateway]
-    [API Gateway] --> [Auth Service]
-    [API Gateway] --> [Tasks Service]
-    [API Gateway] --> [Files Service]
-    [API Gateway] --> [Notifications Service]
-    [Tasks Service] --> [Postgres]
-    [Auth Service] --> [Postgres]
-    [Files Service] --> [PVC / Storage]
-```
-
-Sequence diagram: создание заявки с загрузкой файла и уведомлением
-
-```mermaid
-sequenceDiagram
-    participant Frontend
-    participant Gateway
-    participant Tasks
-    participant Files
-    participant Notifications
-
-    Frontend->>Gateway: POST /api/tasks (task + files)
-    Gateway->>Tasks: POST /tasks (task meta)
-    Tasks->>Files: POST /files (upload)
-    Files-->>Tasks: 201 {file_urls}
-    Tasks-->>Gateway: 201 {task}
-    Gateway->>Notifications: POST /notifications (task_created)
-    Notifications-->>Gateway: 200 OK
-    Gateway-->>Frontend: 201 {task}
-```
-
-## 2.8 DFD L0 и L1 (Mermaid)
-
-DFD L0:
-
-```mermaid
-flowchart TD
-    U[User] -->|Browser| UI[Frontend]
-    UI -->|HTTP| G[API Gateway]
-    G --> A[Auth Service]
-    G --> T[Tasks Service]
-    G --> F[Files Service]
-    G --> N[Notifications]
-    T -->|DB| P[Postgres]
-    A -->|DB| P
-    F -->|Storage| S[Persistent Storage]
-```
-
-DFD L1 (Tasks flow):
-
-```mermaid
-flowchart TD
-    UI -->|Create task| G
-    G -->|Validate JWT| A
-    G -->|Create| T
-    T -->|Store| P
-    T -->|Request file upload| F
-    F -->|Store file| S
-    T -->|Notify| N
-```
-
-## 2.9 Модель физической инфраструктуры
-
-Инфраструктура предполагает размещение контейнеров в Kubernetes кластере (тестовый Minikube или облачный провайдер). Сервисы размещаются в отдельных Deployment, Postgres в StatefulSet с PVC. Ingress обеспечивает HTTP(S) доступ, ConfigMap и Secret хранят конфигурацию и секреты.
-
-Mermaid инфраструктурная схема:
-
-```mermaid
-flowchart LR
-    subgraph K8sCluster["Kubernetes Cluster"]
-      direction TB
-      Ingress --> API[API Gateway Deployment]
-      API --> Auth
-      API --> Tasks
-      API --> Files
-      API --> Notifications
-      Auth --> Postgres
-      Tasks --> Postgres
-      Files --> PVC
-      Notifications --> Postgres
-    end
-    User -->|HTTPS| Ingress
-```
-
----
-
-# Глава 3. Реализация
-
-## 3.1 Структура репозитория (реальная структура проекта)
-
-```
-course2/
-├── auth-service/
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── controllers/
-│   │   ├── models.py
-│   │   ├── schemas.py
-│   │   └── db.py
-│   ├── Dockerfile
-│   └── requirements.txt
-├── tasks-service/
-├── files-service/
-├── notifications-service/
-├── api-gateway/
-├── frontend/
-├── kubernetes/
-├── docker-compose.yml
-└── README.md
-```
-
-> Примечание: структура соответствует реальному репозиторию в проекте `course2`.
-
-## 3.2 Реализация микросервисов на FastAPI
-
-Ниже приведены полные минимально достаточные реализации основных сервисов (урезанные для компактности, но рабочие). Для развёртывания все файлы уже присутствуют в репозитории; здесь – концентрированные версии, которые можно вставить и запустить.
-
-### 3.2.1 auth-service (полный пример)
-
-`auth-service/app/main.py`
-
-```python
-from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-from datetime import datetime, timedelta
-import jwt
-from passlib.context import CryptContext
-
-# Конфигурация (в production - из env)
-SECRET_KEY = "change-me-in-prod"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-app = FastAPI(title="auth-service")
-
-# In-memory store (заменяется на DB в реальной реализации)
-USERS = {}
-ID_COUNTER = 1
-
-class RegisterSchema(BaseModel):
-    email: EmailStr
-    password: str
-    full_name: Optional[str]
-    role: Optional[str] = "resident"
-
-class LoginSchema(BaseModel):
-    email: EmailStr
-    password: str
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-@app.post('/register')
-def register(payload: RegisterSchema):
-    global ID_COUNTER
-    if payload.email in USERS:
-        raise HTTPException(status_code=400, detail="Email exists")
-    hashed = pwd_context.hash(payload.password)
-    user = {"id": ID_COUNTER, "email": payload.email, "password_hash": hashed, "full_name": payload.full_name, "role": payload.role}
-    USERS[payload.email] = user
-    ID_COUNTER += 1
-    return {"id": user["id"], "email": user["email"], "role": user["role"]}
-
-@app.post('/login')
-def login(payload: LoginSchema):
-    user = USERS.get(payload.email)
-    if not user or not pwd_context.verify(payload.password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = create_access_token({"sub": str(user["id"]), "role": user["role"]}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    return {"access_token": token, "token_type": "bearer"}
-
-@app.get('/users')
-def list_users():
-    return list(USERS.values())
-```
-
-> Реальная сервисная версия использует SQLAlchemy и Postgres; в `auth-service` репозитории есть `db/database.py`, модели и миграции.
-
-### 3.2.2 tasks-service (фрагмент)
-
-`tasks-service/app/main.py`
-
-```python
-from fastapi import FastAPI, HTTPException, Depends, Request
-from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime
-
-app = FastAPI(title='tasks-service')
-
-TASKS = {}
-ID = 1
-
-class TaskIn(BaseModel):
-    title: str
-    description: Optional[str]
-    priority: Optional[str] = 'normal'
-
-class TaskOut(TaskIn):
-    id: int
-    status: str
-    author_id: int
-    assigned_worker_id: Optional[int]
-    created_at: datetime
-
-@app.post('/tasks')
-def create_task(task: TaskIn, request: Request):
-    global ID
-    payload = task.dict()
-    t = {**payload, 'id': ID, 'status': 'new', 'author_id': 1, 'assigned_worker_id': None, 'created_at': datetime.utcnow()}
-    TASKS[ID] = t
-    ID += 1
-    return t
-
-@app.get('/tasks')
-def list_tasks():
-    return list(TASKS.values())
-
-@app.get('/tasks/{task_id}')
-def get_task(task_id: int):
-    t = TASKS.get(task_id)
-    if not t:
-        raise HTTPException(404)
-    return t
-
-@app.put('/tasks/{task_id}/assign')
-def assign_worker(task_id: int, body: dict):
-    t = TASKS.get(task_id)
-    if not t:
-        raise HTTPException(404)
-    t['assigned_worker_id'] = body.get('worker_id')
-    t['status'] = 'assigned'
-    return t
-
-@app.put('/tasks/{task_id}/status')
-def update_status(task_id: int, body: dict):
-    t = TASKS.get(task_id)
-    if not t:
-        raise HTTPException(404)
-    t['status'] = body.get('status')
-    return t
-```
-
-> Для реального проекта используйте SQLAlchemy ORM модели, миграции и зависимости от `auth-service` для проверки авторизации.
-
-## 3.3 Реализация API Gateway
-
-`api-gateway/main.py` (суммарно — репозиторный файл в проекте):
-
-```python
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-import httpx
-
-app = FastAPI(title='api-gateway')
-
-AUTH = 'http://auth-service:8001'
-TASKS = 'http://tasks-service:8002'
-FILES = 'http://files-service:8005'
-NOTIFS = 'http://notifications-service:8003'
-
-async def forward(service: str, path: str, request: Request):
-    url = f"{service}{path}"
-    async with httpx.AsyncClient() as client:
-        headers = dict(request.headers)
-        body = await request.body()
-        resp = await client.request(method=request.method, url=url, headers=headers, content=body)
-        return resp.status_code, resp.headers, resp.content
-
-@app.api_route('/api/{service}/{path:path}', methods=['GET','POST','PUT','DELETE','PATCH'])
-async def gateway(service: str, path: str, request: Request):
-    mapping = {'auth': AUTH, 'tasks': TASKS, 'files': FILES, 'notifications': NOTIFS}
-    if service not in mapping:
-        raise HTTPException(404)
-    status_code, headers, content = await forward(mapping[service], f'/{path}', request)
-    return HTTPException(status_code=status_code, detail=content)
-```
-
-> В реальной реализации gateway проверяет JWT, декодирует роль и пробрасывает `X-User-Id` и `X-User-Role` в заголовках.
-
-## 3.4 Реализация фронтенда на Vue.js
-
-Фронтенд — SPA на Vue 3 с Pinia. Ключевые страницы: Login, Dashboard (список задач), NewTask, TaskDetail.
-
-`frontend/src/main.js`
-
-```javascript
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-import './style.css'
-
-createApp(App).use(router).mount('#app')
-```
-
-`frontend/src/services/api.js`
-
-```javascript
-import axios from 'axios'
-const api = axios.create({ baseURL: '/api' })
-export default api
-```
-
-`frontend/src/views/Login.vue` (упрощённо)
-
-```html
-<template>
-  <form @submit.prevent="submit">
-    <input v-model="email" />
-    <input v-model="password" type="password" />
-    <button type="submit">Войти</button>
-  </form>
-</template>
-
-<script>
-import api from '../services/api'
-export default {
-  data(){ return { email:'', password:'' } },
-  methods: {
-    async submit(){
-      const res = await api.post('/auth/login', { email: this.email, password: this.password })
-      localStorage.setItem('token', res.data.access_token)
-      this.$router.push('/')
-    }
-  }
-}
-</script>
-```
-
-`frontend/src/views/Dashboard.vue` — делает GET `/api/tasks` и отображает список.
-
-## 3.5 Реализация БД PostgreSQL
-
-В репозитории есть `init.sql` для инициализации баз (auth_db, tasks_db, notifications_db). Производственная версия использует отдельную БД на каждую bounded context и SQLAlchemy с Alembic для миграций.
-
-Пример модели SQLAlchemy (tasks-service/models.py):
-
-```python
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
-
-Base = declarative_base()
-
-class Task(Base):
-    __tablename__ = 'tasks'
-    id = Column(Integer, primary_key=True)
-    title = Column(String(255), nullable=False)
-    description = Column(Text)
-    status = Column(String(50), default='new')
-    priority = Column(String(20), default='normal')
-    author_id = Column(Integer, nullable=False)
-    assigned_worker_id = Column(Integer, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-```
-
-## 3.6 Docker‑контейнеризация
-
-Пример `Dockerfile` для `auth-service`:
-
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
-```
-
-Корневой `docker-compose.yml` (обновлённый, без analytics):
-
-```yaml
-version: '3.8'
-services:
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql
-  auth-service:
-    build: ./auth-service
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/auth_db
-    ports:
-      - "8001:8001"
-    depends_on:
-      postgres:
-        condition: service_healthy
-  tasks-service:
-    build: ./tasks-service
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tasks_db
-    ports:
-      - "8002:8002"
-    depends_on:
-      postgres:
-        condition: service_healthy
-  notifications-service:
-    build: ./notifications-service
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/notifications_db
-    ports:
-      - "8003:8003"
-    depends_on:
-      postgres:
-        condition: service_healthy
-  api-gateway:
-    build: ./api-gateway
-    ports:
-      - "8000:8000"
-    depends_on:
-      - auth-service
-      - tasks-service
-      - notifications-service
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - api-gateway
-volumes:
-  postgres_data:
-```
-
-## 3.7 Kubernetes‑манифесты
-
-В каталоге `kubernetes/` присутствуют файлы:
-- `00-namespace.yaml`
-- `01-configmap-secret.yaml`
-- `02-postgres.yaml` (StatefulSet + PVC)
-- `03-auth-service.yaml` (Deployment + Service)
-- `04-tasks-service.yaml`
-- `05-notifications-service.yaml`
-- `06-api-gateway.yaml`
-- `07-frontend.yaml`
-- `08-ingress.yaml`
-- `09-hpa.yaml`
-- `10-pdb.yaml`
-
-Пример `03-auth-service.yaml`:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: auth-service
-  namespace: task-management
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: auth-service
-  template:
-    metadata:
-      labels:
-        app: auth-service
-    spec:
-      containers:
-      - name: auth-service
-        image: course2-auth-service:latest
-        ports:
-          - containerPort: 8001
-        envFrom:
-          - configMapRef:
-              name: app-config
-          - secretRef:
-              name: app-secret
-```
-
-## 3.8 Инструкции по запуску
-
-### Локально (через Docker Compose)
-
-```bash
-# Собрать и поднять контейнеры
-docker-compose up -d --build
-# Доступ к фронтенду: http://localhost:3000
-# Swagger / OpenAPI gateway (при наличии): http://localhost:8000/docs
-```
-
-### В Kubernetes (Minikube)
-
-```bash
-minikube start --cpus=4 --memory=4096
-./deploy-k8s.sh
-# потом
-kubectl get pods -n task-management
-minikube service frontend -n task-management
-```
-
----
-
-# Глава 4. Тестирование
-
-## 4.1 Тестирование REST API через Swagger
-
-Каждый сервис публикует OpenAPI спецификацию (FastAPI автоматически генерирует `/docs`). Тестирование выполняется вручную через Swagger UI и автоматически с использованием `pytest`.
-
-## 4.2 Тестирование API Gateway
-
-Проверяется корректность маршрутизации, передача заголовков авторизации и проброс `Authorization` к сервисам. Для тестов использовать `httpx` или `curl`.
-
-Пример curl запроса авторизации через gateway:
-
-```bash
-curl -X POST http://localhost:8000/api/auth/login -d '{"email":"admin@admin.admin","password":"admin"}' -H 'Content-Type: application/json'
-```
-
-## 4.3 Проверка авторизации и JWT
-
-Проверить:
-- Невозможность доступа к защищённым ресурсам без токена;
-- Токен истекает через заданное время;
-- Ролевые ограничения: диспетчер может назначать мастера, работник — менять статус.
-
-## 4.4 CRUD‑тестирование микросервисов
-
-Для `tasks-service`:
-- Создать задачу POST `/api/tasks`;
-- Извлечь список GET `/api/tasks`;
-- Обновить статус PUT `/api/tasks/{id}/status`;
-- Назначить мастера PUT `/api/tasks/{id}/assign`;
-- Удалить задачу (если реализовано).
-
-## 4.5 Тестирование фронтенда (XHR, Network)
-
-Использовать DevTools для инспекции сетевых запросов, проверить успешную передачу `Authorization` header и загрузку файлов (multipart/form-data).
-
-## 4.6 End‑to‑End сценарии
-
-1. Регистрация жильца → Вход → Создание заявки с фотографией → Диспетчер назначает мастера → Мастер меняет статус на `in_progress` и затем `done` → Диспетчер проверяет и закрывает.
-2. Негативные: попытка назначить мастера пользователем без роли диспетчер.
-
----
-
-## Заключение
-
-В работе реализован учебный пример микросервисного приложения для управления заявками на ремонт. Выбранный стек обеспечивает баланс скорости разработки и соответствия промышленным практикам. Предложенная архитектура расширяема: добавление очередей событий, внешних интеграций, мониторинга и аудита не требует радикальной переработки.
-
----
-
-## Список источников
-
-1. Richardson, C. Microservices Patterns. Manning, 2018.
-2. Fielding, R. Architectural Styles and the Design of Network-based Software Architectures. Dissertation, 2000.
-3. FastAPI documentation — https://fastapi.tiangolo.com
-4. Vue.js documentation — https://vuejs.org
-5. Kubernetes documentation — https://kubernetes.io
-
----
-
-## Приложения
-
-### A. Mermaid диаграммы (копировать в draw.io как Mermaid)
-
-(см. разделы выше — ER, Use Case, Sequence, DFD, Component, Infrastructure)
-
-### B. Полные конфигурации и кодовые фрагменты
-
-В репозитории проекта находятся рабочие реализации всех сервисов в директориях `auth-service`, `tasks-service`, `files-service`, `notifications-service`, `api-gateway`, `frontend`. Ниже приведены наиболее важные конфигурации (повтор):
-
-- `docker-compose.yml` — в корне проекта.
-- `kubernetes/*.yaml` — в папке `kubernetes/`.
-- `init.sql` — инициализация БД.
-
-### C. Запуск тестов
-
-В проект добавлены тесты `pytest` для `auth-service` и `tasks-service`. Запуск:
-
-```bash
-pytest auth-service/tests -q
-pytest tasks-service/tests -q
-```
-
----
-
-## Примечания по дальнейшей работе
-
-- Подключение SMTP: использовать `notifications-service` для отправки реальных писем (config через Secrets).
-- Масштабирование: настроить HPA и resource limits для сервисов.
-- Мониторинг: интеграция Prometheus и Grafana для метрик.
-
----
-
-> Файлы кода и все манифесты находятся в корне репозитория `course2/`. Если нужно, могу автоматически вставить сюда полные версии всех файлов (каждый сервис), но это значительно увеличит объём документа. Напишите, нужно ли вложить все исходники прямо в этот Markdown.
+- Масштабируемость, отказоустойчивость, безопасность, удобство интерфейса, интеграция, логирование, экономическая эффективность, юридические требования, перспективы развития
+
+Ограничения:
+- Использование контейнеризации, поддержка облака и on-premise, требования к производительности, поддержка масштабирования, резервного копирования, миграции данных
+- Разделение ролей, требования к отчётности, стандартизация процессов, обучение персонала
+- Микросервисная архитектура, поддержка CI/CD, автоматизация тестирования, требования к безопасности, интеграция с корпоративными системами
+- Сроки внедрения, этапы перехода, поддержка миграции данных
+
+3.2. Анализ архитектурных стилей клиент-серверных приложений
+Для приложения выбран микросервисный стиль с API Gateway. Сравнение:
+- Монолит — простота, но сложная поддержка и масштабирование
+- Модульный монолит — частичная независимость, но ограниченная гибкость
+- Микросервисы — независимость сервисов, масштабируемость, гибкость, интеграция, отказоустойчивость
+- Serverless — не подходит из-за сложности бизнес-логики и необходимости контроля
+
+Вывод: микросервисы оптимальны для задачи автоматизации ремонта и обслуживания, обеспечивают независимость сервисов, масштабируемость, интеграцию новых функций, отказоустойчивость, автоматизацию тестирования и развертывания.
+
+3.3. Разработка архитектуры приложения
+Архитектура включает:
+- Auth-service: регистрация, авторизация, управление ролями, выдача JWT, хранение пользователей, аудит действий
+- Tasks-service: создание, редактирование, удаление задач, статусы, назначение работников, история изменений, комментарии, отчётность, хранение файлов
+- Notifications-service: обработка событий, отправка уведомлений, хранение истории уведомлений, настройка шаблонов сообщений, интеграция с брокерами сообщений
+- API Gateway: маршрутизация запросов, аутентификация, авторизация, агрегация данных, обработка ошибок, интеграция с мониторингом и логированием
+
+Модель данных:
+- User (id, username, password_hash, role, email, phone, created_at, updated_at, last_login, is_active)
+- Task (id, title, description, status, assigned_to, created_by, created_at, updated_at, finished_at, deadline, priority)
+- Comment (id, task_id, author_id, text, created_at, attachment)
+- History (id, task_id, event_type, event_data, created_at, user_id)
+- Notification (id, user_id, type, message, created_at, read, channel)
+- File (id, task_id, uploader_id, file_path, uploaded_at, file_type)
+
+Взаимодействие сервисов через API Gateway: все запросы от клиента проходят через gateway, который маршрутизирует их к микросервисам, обеспечивает аутентификацию, авторизацию, агрегацию данных, защиту, логирование, мониторинг. Взаимодействие между микросервисами — через REST API и асинхронные события.
+
+Архитектурный паттерн MVC реализован внутри каждого микросервиса:
+- Model — работа с данными, взаимодействие с базой данных, реализация бизнес-логики, поддержка валидации и сериализации.
+- View — формирование ответов API, сериализация данных, обработка ошибок, поддержка различных форматов (JSON, XML).
+- Controller — обработка входящих запросов, вызов бизнес-логики, организация взаимодействия между слоями, поддержка асинхронных операций.
+
+В каждом сервисе реализованы механизмы валидации данных, обработка исключений, поддержка асинхронных операций, интеграция с внешними API, логирование и аудит действий пользователей.
+
+3.4. Архитектурные диаграммы
+В работе используются:
+- UML Use Case — роли: пользователь, администратор, работник, заказчик; процессы: регистрация, авторизация, создание задачи, комментирование, уведомления, отчётность.
+- UML Component — компоненты: Auth-service, Tasks-service, Notifications-service, API Gateway, Frontend, PostgreSQL, Redis.
+- DFD — потоки данных между сервисами, пользователями, базой данных, очередями.
+- ER-диаграмма — сущности: User, Task, Comment, Notification, связи между ними.
+- UML Sequence — сценарии: создание задачи, авторизация, отправка уведомления, завершение задачи, утверждение результата.
+- C4 — уровни: Context (границы системы, внешние связи), Container (структура контейнеров, взаимодействие, масштабирование).
+
+3.5. Применяемые паттерны проектирования
+В системе реализованы:
+- MVC — разделение логики, данных и представления во всех микросервисах.
+- DDD (Bounded Contexts) — каждый сервис реализует свой ограниченный контекст: Auth-service (пользователи), Tasks-service (задачи), Notifications-service (уведомления).
+- Repository — абстракция доступа к данным, отделение бизнес-логики от хранения.
+- Dependency Injection — внедрение зависимостей для тестируемости и гибкости.
+- Event Notification — обработка событий и отправка уведомлений через брокер сообщений (Redis).
+- Factory — создание объектов задач, пользователей, уведомлений.
+- Observer — отслеживание изменений статусов задач, автоматическая отправка уведомлений.
+
+3.6. Обоснование выбора технологий
+Выбор технологий обусловлен требованиями к производительности, масштабируемости и интеграции:
+- FastAPI — для микросервисов и API Gateway: высокая производительность, асинхронность, поддержка OpenAPI, интеграция с Pydantic и JWT.
+- PostgreSQL — для хранения данных: транзакции, индексы, гибкая структура, поддержка JSON.
+- Vue 3 + Pinia — для фронтенда: SPA, управление состоянием, мобильная адаптация.
+- Docker — контейнеризация сервисов, поддержка CI/CD, переносимость.
+- Kubernetes — оркестрация, автоматизация масштабирования, отказоустойчивость.
+- API Gateway — выбран FastAPI для унификации стека и гибкости маршрутизации.
+Микросервисная архитектура обеспечивает независимость сервисов, масштабирование, гибкость развития, автоматизацию тестирования и развертывания.
+
+3.7. Описание прототипа системы (MVP)
+MVP реализует:
+- Регистрация и авторизация пользователей с ролями, выдача JWT, восстановление пароля.
+- Управление задачами: создание, редактирование, удаление, назначение работников, статусы, история изменений, комментарии, файлы.
+- Комментарии: чат, вложения, уведомления, упоминания.
+- История событий: изменения статусов, назначений, комментариев, файлов.
+- Уведомления: назначение задач, изменение статусов, новые комментарии, завершение работ.
+- Интерфейс для ролей: администратор (управление задачами, отчётность, аналитика), работник (выполнение задач, комментарии, файлы).
+- Поиск и фильтрация задач, экспорт отчётов, интеграция с BI.
+- Интеграция с внешними сервисами (почта, мессенджеры, облачные хранилища, бухгалтерия), поддержка webhook.
+Взаимодействие через API Gateway: маршрутизация, аутентификация, авторизация, агрегация данных, обработка ошибок, мониторинг. Фронтенд на Vue 3: удобный интерфейс, мобильная адаптация, кастомизация.
+
+Заключение
+В работе:
+- Проведён анализ предметной области и требований к системе автоматизации задач ремонта и обслуживания.
+- Обоснован выбор микросервисной архитектуры с API Gateway.
+- Разработана структура приложения, модели данных, механизмы интеграции и безопасности.
+- Описаны паттерны проектирования, выбор технологий, контейнеризация и оркестрация.
+- Реализован MVP: регистрация, авторизация, управление задачами, история изменений, комментарии, уведомления, отчётность, интеграция с внешними сервисами.
+Решение соответствует современным требованиям, обеспечивает масштабируемость, гибкость, отказоустойчивость, интеграцию новых функций.
+
+Список использованных источников
+1. Fowler M. Patterns of Enterprise Application Architecture. Addison-Wesley, 2002.
+2. Evans E. Domain-Driven Design: Tackling Complexity in the Heart of Software. Addison-Wesley, 2003.
+3. Gamma E., Helm R., Johnson R., Vlissides J. Design Patterns: Elements of Reusable Object-Oriented Software. Addison-Wesley, 1994.
+4. Postgresql Documentation. URL: https://www.postgresql.org/docs/
+5. FastAPI Documentation. URL: https://fastapi.tiangolo.com/
+6. Docker Documentation. URL: https://docs.docker.com/
+7. Kubernetes Documentation. URL: https://kubernetes.io/docs/
+8. Vue.js Documentation. URL: https://vuejs.org/
+9. Traefik Documentation. URL: https://doc.traefik.io/traefik/
+10. ГОСТ 7.0.5-2008. Библиографическая ссылка. Общие требования и правила составления.

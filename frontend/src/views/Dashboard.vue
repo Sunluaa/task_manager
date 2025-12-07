@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
     <nav class="bg-white shadow">
       <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-blue-600">Задачи</h1>
+        <h1 class="text-2xl font-bold text-orange-600">Задачи</h1>
         <div class="flex items-center gap-4">
           <span v-if="authStore.user" class="text-sm text-gray-600">
             {{ authStore.user.email }}
@@ -30,7 +30,7 @@
         <router-link
           v-if="authStore.user?.role === 'admin'"
           to="/tasks/new"
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
+          class="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition"
         >
           + Новая задача
         </router-link>
@@ -44,7 +44,7 @@
           :class="[
             'px-4 py-2 rounded-lg font-semibold transition',
             currentFilter === filter.value
-              ? 'bg-blue-600 text-white'
+              ? 'bg-orange-600 text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
           ]"
         >
@@ -53,7 +53,7 @@
       </div>
 
       <div v-if="tasksStore.loading" class="flex justify-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
       </div>
 
       <div v-else-if="filteredTasks.length === 0" class="text-center py-12">
@@ -185,10 +185,10 @@ const getStatusBadgeClass = (status) => {
 const getPriorityBadgeClass = (priority) => {
   const baseClass = 'inline-block px-3 py-1 rounded-full text-xs font-semibold'
   const classes = {
-    'low': 'bg-blue-100 text-blue-800',
-    'medium': 'bg-purple-100 text-purple-800',
-    'high': 'bg-orange-100 text-orange-800',
-    'urgent': 'bg-red-100 text-red-800'
+    'low': 'bg-orange-100 text-orange-800',
+    'medium': 'bg-yellow-100 text-yellow-800',
+    'high': 'bg-red-100 text-red-800',
+    'urgent': 'bg-red-600 text-red-800'
   }
   return `${baseClass} ${classes[priority] || classes.medium}`
 }

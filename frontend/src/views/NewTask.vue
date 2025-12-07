@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100">
     <nav class="bg-white shadow">
       <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <router-link to="/" class="text-2xl font-bold text-blue-600">Задачи</router-link>
+        <router-link to="/" class="text-2xl font-bold text-orange-600">Задачи</router-link>
         <button @click="handleLogout" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition">
           Выход
         </button>
@@ -20,7 +20,7 @@
               v-model="form.title"
               type="text"
               required
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
               placeholder="Название задачи"
             />
           </div>
@@ -30,7 +30,7 @@
             <textarea
               v-model="form.description"
               rows="4"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
               placeholder="Описание задачи"
             ></textarea>
           </div>
@@ -40,7 +40,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Приоритет</label>
               <select
                 v-model="form.priority"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
               >
                 <option value="low">Низкий</option>
                 <option value="medium">Средний</option>
@@ -53,7 +53,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Статус</label>
               <select
                 v-model="form.status"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
               >
                 <option value="new">Новая</option>
                 <option value="in_progress">В процессе</option>
@@ -70,7 +70,7 @@
             <button
               type="submit"
               :disabled="loading"
-              class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ loading ? 'Создание...' : 'Создать' }}
             </button>

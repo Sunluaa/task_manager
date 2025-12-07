@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-12">
+  <div class="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center px-4 py-12">
     <div class="w-full max-w-md">
       <div class="bg-white rounded-lg shadow-lg p-8">
         <div class="mb-8 text-center">
-          <h1 class="text-4xl font-bold text-blue-600 mb-2"></h1>
+          <h1 class="text-4xl font-bold text-orange-600 mb-2"></h1>
           <h2 class="text-2xl font-bold text-gray-900">Менеджер задач</h2>
           <p class="text-gray-600 text-sm mt-2">Войдите для управления задачами</p>
         </div>
@@ -20,7 +20,7 @@
               type="email"
               required
               :disabled="loading"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
               placeholder="admin@admin.admin"
             />
           </div>
@@ -32,7 +32,7 @@
               type="password"
               required
               :disabled="loading"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100"
               placeholder="••••••••"
             />
           </div>
@@ -40,7 +40,7 @@
           <button
             type="submit"
             :disabled="loading || !email || !password"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {{ loading ? 'Вход...' : 'Войти' }}
           </button>
@@ -76,7 +76,16 @@ const handleLogin = async () => {
     await authStore.login(email.value, password.value)
     router.push('/')
   } catch (err) {
-    error.value = err.response?.data?.detail || err.message || 'Login failed'
+    // Обработка ошибок с API
+    if (err.response?.data?.detail) {
+      error.value = err.response.data.detail
+    } else if (err.response?.data?.message) {
+      error.value = err.response.data.message
+    } else if (typeof err.response?.data === 'string') {
+      error.value = err.response.data
+    } else {
+      error.value = err.message || 'Ошибка входа'
+    }
   } finally {
     loading.value = false
   }

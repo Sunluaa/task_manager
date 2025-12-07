@@ -28,6 +28,11 @@ spec:
             configMapKeyRef:
               name: app-config
               key: NOTIFICATIONS_DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: REDIS_URL
         - name: JWT_SECRET
           valueFrom:
             configMapKeyRef:
@@ -42,16 +47,20 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /notifications
+            path: /health
             port: 8003
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /notifications
+            path: /health/ready
             port: 8003
           initialDelaySeconds: 10
           periodSeconds: 5
+      initContainers:
+      - name: wait-for-redis
+        image: redis:7-alpine
+        command: ['sh', '-c', 'until redis-cli -h redis-service ping; do echo waiting for redis; sleep 2; done;']
 ---
 apiVersion: v1
 kind: Service
@@ -66,3 +75,66 @@ spec:
     targetPort: 8003
     protocol: TCP
   type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-worker
+  namespace: task-management
+  labels:
+    app: notifications-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notifications-worker
+  template:
+    metadata:
+      labels:
+        app: notifications-worker
+    spec:
+      containers:
+      - name: worker
+        image: course2-notifications-service:latest
+        imagePullPolicy: Never
+        command: ["python", "worker.py"]
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: NOTIFICATIONS_DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: REDIS_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import asyncio; from app.services.redis_client import RedisClient; asyncio.run(RedisClient.health_check())"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import asyncio; from app.services.redis_client import RedisClient; asyncio.run(RedisClient.health_check())"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      initContainers:
+      - name: wait-for-redis
+        image: redis:7-alpine
+        command: ['sh', '-c', 'until redis-cli -h redis-service ping; do echo waiting for redis; sleep 2; done;']
+      restartPolicy: Always
+
