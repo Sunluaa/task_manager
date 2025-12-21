@@ -1,16 +1,58 @@
 version: '3.8'
 
 services:
-  postgres:
+  # Auth Service Database
+  postgres-auth:
     image: postgres:15-alpine
     environment:
+      POSTGRES_DB: auth_db
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - postgres_auth_data:/var/lib/postgresql/data
+      - ./init-auth-db.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # Tasks Service Database
+  postgres-tasks:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: tasks_db
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_tasks_data:/var/lib/postgresql/data
+      - ./init-tasks-db.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # Notifications Service Database
+  postgres-notifications:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: notifications_db
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_notifications_data:/var/lib/postgresql/data
+      - ./init-notifications-db.sql:/docker-entrypoint-initdb.d/01-init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -37,12 +79,15 @@ services:
   auth-service:
     build: ./auth-service
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/auth_db
+      DATABASE_URL: postgresql://postgres:postgres@postgres-auth:5432/auth_db
+      REDIS_URL: redis://redis:6379/0
       SECRET_KEY: your-secret-key-change-in-production
     ports:
       - "8001:8001"
     depends_on:
-      postgres:
+      postgres-auth:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - app-network
@@ -50,11 +95,14 @@ services:
   tasks-service:
     build: ./tasks-service
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tasks_db
+      DATABASE_URL: postgresql://postgres:postgres@postgres-tasks:5432/tasks_db
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8002:8002"
     depends_on:
-      postgres:
+      postgres-tasks:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - app-network
@@ -62,12 +110,12 @@ services:
   notifications-service:
     build: ./notifications-service
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/notifications_db
+      DATABASE_URL: postgresql://postgres:postgres@postgres-notifications:5432/notifications_db
       REDIS_URL: redis://redis:6379/0
     ports:
       - "8003:8003"
     depends_on:
-      postgres:
+      postgres-notifications:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -79,10 +127,29 @@ services:
       context: ./notifications-service
       dockerfile: Dockerfile.worker
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/notifications_db
+      DATABASE_URL: postgresql://postgres:postgres@postgres-notifications:5432/notifications_db
       REDIS_URL: redis://redis:6379/0
     depends_on:
-      postgres:
+      postgres-notifications:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: on-failure
+
+  # Event Consumer Worker - consumes events from Redis Streams
+  event-consumer-worker:
+    build:
+      context: ./notifications-service
+      dockerfile: Dockerfile.worker
+    entrypoint: python event_consumer_worker.py
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-notifications:5432/notifications_db
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres-notifications:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -111,9 +178,12 @@ services:
       - app-network
 
 volumes:
-  postgres_data:
+  postgres_auth_data:
+  postgres_tasks_data:
+  postgres_notifications_data:
   redis_data:
 
 networks:
   app-network:
     driver: bridge
+

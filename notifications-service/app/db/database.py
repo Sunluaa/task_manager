@@ -5,7 +5,7 @@ import os
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:postgres@localhost:5432/notifications_db"
+    "postgresql://postgres:postgres@localhost:5434/notifications_db"
 )
 
 engine = create_engine(

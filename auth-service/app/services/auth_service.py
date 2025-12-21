@@ -7,6 +7,11 @@ from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserLogin, TokenPayload
 import os
 import logging
+import sys
+
+# Add parent directory to path for importing shared_events
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
+from shared_events import Event, EventType, get_event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +83,26 @@ class AuthService:
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
+        
+        # Publish USER_CREATED event
+        try:
+            event_bus = get_event_bus()
+            event = Event(
+                event_type=EventType.USER_CREATED,
+                aggregate_id=str(db_user.id),
+                aggregate_type="user",
+                data={
+                    "email": db_user.email,
+                    "full_name": db_user.full_name,
+                    "role": db_user.role,
+                    "user_id": db_user.id
+                }
+            )
+            event_bus.publish(event)
+            logger.info(f"✓ USER_CREATED event published for user: {db_user.email}")
+        except Exception as e:
+            logger.error(f"✗ Failed to publish USER_CREATED event: {e}")
+        
         return db_user
 
     @staticmethod

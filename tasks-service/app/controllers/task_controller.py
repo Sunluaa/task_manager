@@ -8,6 +8,12 @@ from app.schemas.task import (
 from app.services.task_service import TaskService
 from app.services.user_validator import UserValidator
 import logging
+import os
+import sys
+
+# Add parent directory to path for importing shared_events
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
+from shared_events import Event, EventType, get_event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +40,29 @@ async def create_task(task: TaskCreate, db: Session = Depends(get_db), user_id: 
         worker_ids=task.worker_ids
     )
     logger.info(f"Task created: {db_task.id}")
+    
+    # Publish TASK_CREATED event
+    try:
+        event_bus = get_event_bus()
+        event = Event(
+            event_type=EventType.TASK_CREATED,
+            aggregate_id=str(db_task.id),
+            aggregate_type="task",
+            data={
+                "task_id": db_task.id,
+                "title": db_task.title,
+                "description": db_task.description,
+                "priority": db_task.priority,
+                "status": db_task.status,
+                "created_by": db_task.created_by,
+                "worker_ids": db_task.worker_ids or []
+            }
+        )
+        event_bus.publish(event)
+        logger.info(f"✓ TASK_CREATED event published for task: {db_task.id}")
+    except Exception as e:
+        logger.error(f"✗ Failed to publish TASK_CREATED event: {e}")
+    
     return db_task
 
 @router.get("/", response_model=list[TaskResponse])
@@ -109,6 +138,27 @@ async def update_task(
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
     logger.info(f"Task updated: {task_id}")
+    
+    # Publish TASK_UPDATED event
+    try:
+        event_bus = get_event_bus()
+        event = Event(
+            event_type=EventType.TASK_UPDATED,
+            aggregate_id=str(task.id),
+            aggregate_type="task",
+            data={
+                "task_id": task.id,
+                "title": task.title,
+                "status": task.status,
+                "priority": task.priority,
+                "updated_by": user_id
+            }
+        )
+        event_bus.publish(event)
+        logger.info(f"✓ TASK_UPDATED event published for task: {task_id}")
+    except Exception as e:
+        logger.error(f"✗ Failed to publish TASK_UPDATED event: {e}")
+    
     return task
 
 @router.delete("/{task_id}")
@@ -137,6 +187,24 @@ async def mark_completed(
 ):
     completion = TaskService.mark_worker_completed(db, task_id, user_id)
     logger.info(f"Worker {user_id} marked task {task_id} as completed")
+    
+    # Publish TASK_COMPLETED event
+    try:
+        event_bus = get_event_bus()
+        event = Event(
+            event_type=EventType.TASK_COMPLETED,
+            aggregate_id=str(task_id),
+            aggregate_type="task",
+            data={
+                "task_id": task_id,
+                "worker_id": user_id
+            }
+        )
+        event_bus.publish(event)
+        logger.info(f"✓ TASK_COMPLETED event published for task: {task_id}")
+    except Exception as e:
+        logger.error(f"✗ Failed to publish TASK_COMPLETED event: {e}")
+    
     return completion
 
 @router.post("/{task_id}/approve", response_model=TaskResponse)
