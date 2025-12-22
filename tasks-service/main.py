@@ -53,8 +53,10 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup():
-    init_db()
-    logger.info("Database initialized")
+    # Skip init_db if in test environment
+    if not os.getenv("PYTEST_CURRENT_TEST"):
+        init_db()
+        logger.info("Database initialized")
 
 app.include_router(task_router)
 

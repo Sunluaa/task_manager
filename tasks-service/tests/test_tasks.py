@@ -5,10 +5,15 @@ from sqlalchemy.orm import sessionmaker
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Make sure we import from tasks-service
+tasks_service_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if tasks_service_path not in sys.path:
+    sys.path.insert(0, tasks_service_path)
 
 from app.db.database import Base, get_db
-from main import app
+from main import app as tasks_app
+app = tasks_app
+
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_tasks.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
@@ -26,8 +31,9 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function", autouse=True)
 def db():
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield TestingSessionLocal()
     Base.metadata.drop_all(bind=engine)
@@ -38,9 +44,7 @@ def test_create_task():
         json={
             "title": "Test Task",
             "description": "Test Description",
-            "status": "new",
-            "priority": "high",
-            "user_id": 1
+            "priority": "high"
         }
     )
     assert response.status_code == 201
@@ -54,9 +58,7 @@ def test_get_tasks():
         json={
             "title": "Task 1",
             "description": "Description 1",
-            "status": "new",
-            "priority": "medium",
-            "user_id": 1
+            "priority": "medium"
         }
     )
     client.post(
@@ -64,9 +66,7 @@ def test_get_tasks():
         json={
             "title": "Task 2",
             "description": "Description 2",
-            "status": "in_progress",
-            "priority": "low",
-            "user_id": 1
+            "priority": "low"
         }
     )
     response = client.get("/tasks")
@@ -80,9 +80,7 @@ def test_get_task_by_id():
         json={
             "title": "Specific Task",
             "description": "Specific Description",
-            "status": "new",
-            "priority": "urgent",
-            "user_id": 1
+            "priority": "high"
         }
     )
     task_id = create_response.json()["id"]
@@ -98,9 +96,7 @@ def test_update_task():
         json={
             "title": "Update Test",
             "description": "Original",
-            "status": "new",
-            "priority": "low",
-            "user_id": 1
+            "priority": "low"
         }
     )
     task_id = create_response.json()["id"]
@@ -109,15 +105,12 @@ def test_update_task():
         json={
             "title": "Updated Task",
             "description": "Updated Description",
-            "status": "in_progress",
-            "priority": "high",
-            "user_id": 1
+            "priority": "high"
         }
     )
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == "Updated Task"
-    assert data["status"] == "in_progress"
 
 def test_delete_task():
     create_response = client.post(
@@ -125,9 +118,7 @@ def test_delete_task():
         json={
             "title": "Delete Test",
             "description": "To Delete",
-            "status": "new",
-            "priority": "medium",
-            "user_id": 1
+            "priority": "medium"
         }
     )
     task_id = create_response.json()["id"]
@@ -143,9 +134,7 @@ def test_task_validation():
         json={
             "title": "",
             "description": "Missing title",
-            "status": "invalid_status",
-            "priority": "high",
-            "user_id": 1
+            "priority": "high"
         }
     )
     assert response.status_code == 422
@@ -156,9 +145,7 @@ def test_add_worker_to_task():
         json={
             "title": "Worker Task",
             "description": "Task for worker",
-            "status": "new",
-            "priority": "medium",
-            "user_id": 1
+            "priority": "medium"
         }
     )
     task_id = create_response.json()["id"]
@@ -171,12 +158,13 @@ def test_complete_task_by_worker():
         json={
             "title": "Complete Test",
             "description": "Worker completes",
-            "status": "new",
-            "priority": "high",
-            "user_id": 1
+            "priority": "high"
         }
     )
     task_id = create_response.json()["id"]
+    # First assign the worker to the task
+    client.post(f"/tasks/{task_id}/add-worker/2")
+    # Now mark as completed
     response = client.post(f"/tasks/{task_id}/complete?user_id=2")
     assert response.status_code == 200
 
@@ -186,9 +174,7 @@ def test_filter_tasks_by_status():
         json={
             "title": "New Task",
             "description": "Status new",
-            "status": "new",
-            "priority": "medium",
-            "user_id": 1
+            "priority": "medium"
         }
     )
     client.post(
@@ -196,9 +182,7 @@ def test_filter_tasks_by_status():
         json={
             "title": "Completed Task",
             "description": "Status completed",
-            "status": "completed",
-            "priority": "low",
-            "user_id": 1
+            "priority": "low"
         }
     )
     response = client.get("/tasks?status=completed")

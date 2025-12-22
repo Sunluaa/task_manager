@@ -2,6 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 import sys
 import os
 
@@ -10,8 +11,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from app.db.database import Base, get_db
 from main import app
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, 
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base.metadata.create_all(bind=engine)
@@ -26,13 +31,14 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function", autouse=True)
 def db():
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield TestingSessionLocal()
     Base.metadata.drop_all(bind=engine)
 
-def test_register_user():
+def test_register_user(db):
     response = client.post(
         "/auth/register",
         json={
@@ -46,7 +52,7 @@ def test_register_user():
     assert data["email"] == "test@test.com"
     assert "id" in data
 
-def test_register_duplicate_email():
+def test_register_duplicate_email(db):
     client.post(
         "/auth/register",
         json={
@@ -65,7 +71,7 @@ def test_register_duplicate_email():
     )
     assert response.status_code == 400
 
-def test_login_success():
+def test_login_success(db):
     client.post(
         "/auth/register",
         json={
@@ -86,7 +92,7 @@ def test_login_success():
     assert "access_token" in data
     assert data["token_type"] == "bearer"
 
-def test_login_invalid_password():
+def test_login_invalid_password(db):
     client.post(
         "/auth/register",
         json={
@@ -104,7 +110,7 @@ def test_login_invalid_password():
     )
     assert response.status_code == 401
 
-def test_login_nonexistent_user():
+def test_login_nonexistent_user(db):
     response = client.post(
         "/auth/login",
         json={
@@ -114,7 +120,7 @@ def test_login_nonexistent_user():
     )
     assert response.status_code == 401
 
-def test_get_users():
+def test_get_users(db):
     client.post(
         "/auth/register",
         json={
@@ -138,7 +144,7 @@ def test_get_users():
     assert any(u["email"] == "user1@test.com" for u in data)
     assert any(u["email"] == "user2@test.com" for u in data)
 
-def test_invalid_registration_data():
+def test_invalid_registration_data(db):
     response = client.post(
         "/auth/register",
         json={
@@ -149,7 +155,7 @@ def test_invalid_registration_data():
     )
     assert response.status_code == 422
 
-def test_verify_token():
+def test_verify_token(db):
     register_response = client.post(
         "/auth/register",
         json={
@@ -174,7 +180,7 @@ def test_verify_token():
     data = response.json()
     assert data["email"] == "verify@test.com"
 
-def test_verify_invalid_token():
+def test_verify_invalid_token(db):
     response = client.get(
         "/auth/verify",
         headers={"Authorization": "Bearer invalidtoken"}

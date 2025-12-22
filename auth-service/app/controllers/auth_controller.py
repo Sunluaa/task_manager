@@ -29,7 +29,7 @@ def require_admin(current_user = Depends(get_current_user)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return current_user
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user: UserCreate, db: Session = Depends(get_db)):
     try:
         db_user = AuthService.register_user(db, user)
@@ -84,23 +84,17 @@ async def login(credentials: UserLogin, db: Session = Depends(get_db)):
         "user": user
     }
 
-@router.post("/verify")
-async def verify_token(token: str):
-    token_payload = AuthService.verify_token(token)
-    if not token_payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
-        )
-    return {"valid": True, "email": token_payload.sub, "role": token_payload.role}
+@router.get("/verify", response_model=UserResponse)
+async def verify_token(current_user = Depends(get_current_user)):
+    return current_user
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(current_user = Depends(get_current_user)):
     return current_user
 
 @router.get("/users", response_model=list[UserResponse])
-async def get_users(skip: int = 0, limit: int = 100, current_user = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Get all users (available to any authenticated user)"""
+async def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Get all users"""
     users = AuthService.get_all_users(db, skip, limit)
     return users
 

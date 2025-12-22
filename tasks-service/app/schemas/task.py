@@ -60,7 +60,7 @@ class WorkerCompletionResponse(BaseModel):
         from_attributes = True
 
 class TaskCreate(BaseModel):
-    title: str
+    title: str = Field(..., min_length=1)
     description: str
     priority: TaskPriority = TaskPriority.MEDIUM
     worker_ids: List[int] = []
@@ -81,7 +81,6 @@ class TaskResponse(BaseModel):
     created_by: int
     created_at: datetime
     updated_at: datetime
-    worker_ids: List[int] = []
     comments: List[CommentResponse] = []
     history: List[HistoryResponse] = []
     worker_completions: List[WorkerCompletionResponse] = []

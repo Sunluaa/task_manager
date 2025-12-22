@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
-@router.post("/", response_model=TaskResponse)
+@router.post("", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 async def create_task(task: TaskCreate, db: Session = Depends(get_db), user_id: int = 1):
     # Validate that all workers are active
     if task.worker_ids:
@@ -65,7 +65,7 @@ async def create_task(task: TaskCreate, db: Session = Depends(get_db), user_id: 
     
     return db_task
 
-@router.get("/", response_model=list[TaskResponse])
+@router.get("", response_model=list[TaskResponse])
 async def get_tasks(
     skip: int = 0,
     limit: int = 100,
@@ -160,13 +160,11 @@ async def update_task(
         logger.error(f"✗ Failed to publish TASK_UPDATED event: {e}")
     
     return task
-
-@router.delete("/{task_id}")
+@router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(task_id: int, db: Session = Depends(get_db)):
     if not TaskService.delete_task(db, task_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
     logger.info(f"Task deleted: {task_id}")
-    return {"detail": "Task deleted"}
 
 @router.post("/{task_id}/comments", response_model=CommentResponse)
 async def add_comment(

@@ -3,6 +3,8 @@
 Небольшая, но полная демонстрационная микросервисная система для управления задачами.
 
 Состав: API Gateway, Auth, Tasks, Notifications, фронтенд (Vue) и вспомогательные компоненты (Redis, Postgres).
+
+⚠️  **Требования:** Python 3.11 или 3.12 (3.13+ имеет проблемы совместимости с SQLAlchemy)
 """
 
 # Быстрый старт
@@ -67,7 +69,7 @@ uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 
 ## Тестирование
 
-Запустить тесты из корня репозитория:
+Запустить тесты из корня репозитория (требуется Python 3.11 или 3.12):
 
 ```bash
 pytest -q
@@ -77,6 +79,13 @@ pytest -q
 
 ```bash
 pytest auth-service -q
+```
+
+Перед запуском тестов убедитесь, что установлены все зависимости:
+
+```bash
+pip install -r auth-service/requirements.txt
+pip install -r tasks-service/requirements.txt
 ```
 
 ## Kubernetes
